@@ -1,0 +1,52 @@
+// export const ROLES = {
+//   ADMIN: "admin",
+//   PMO: "pmo",
+//   USER: "user",
+// };
+
+export const ROLES = {
+  ADMIN: "admin",
+  HEAD: "head",
+  TEAM_MEMBER:"team_member",
+  PMO:"pmo",
+  SECTION_OWNER:"section_owner"
+};
+
+export const PERMISSIONS = {
+  READ: "read",
+  UPDATE: "update",
+  CREATE_PROJECT: "create_project",
+  DELETE_PROJECT: "delete_project",
+  EDIT_PROJECT: "edit_project",
+  VIEW_PRR: "view_prr",
+  SET_PMO:"set_pmo"
+};
+
+export const ROLES_PERMISSIONS = {
+  [ROLES.ADMIN]: [
+    // PERMISSIONS.CRUD,
+    PERMISSIONS.READ,
+    PERMISSIONS.UPDATE,
+    PERMISSIONS.CREATE_PROJECT,
+    PERMISSIONS.DELETE_PROJECT,
+    PERMISSIONS.EDIT_PROJECT,
+  ],
+  [ROLES.PMO]:[
+    // PERMISSIONS.CRUD,
+    PERMISSIONS.READ,
+    PERMISSIONS.UPDATE,
+    PERMISSIONS.CREATE_PROJECT,
+    PERMISSIONS.DELETE_PROJECT,
+    PERMISSIONS.EDIT_PROJECT,
+    PERMISSIONS.VIEW_PRR
+  ],
+  [ROLES.TEAM_MEMBER]:[
+    // PERMISSIONS.CRUD,
+    PERMISSIONS.READ,
+    PERMISSIONS.UPDATE,
+    // PERMISSIONS.CREATE_PROJECT,
+    // PERMISSIONS.DELETE_PROJECT,
+    PERMISSIONS.EDIT_PROJECT,
+    PERMISSIONS.VIEW_PRR
+  ]
+};
