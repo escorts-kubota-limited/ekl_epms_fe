@@ -484,23 +484,6 @@ const SelectTeam = ({
   teamResponsibility,
   setTeamResponsibility,
 }) => {
-  // const departments = [
-  //   "Sales",
-  //   "Marketing",
-  //   "Engineering",
-  //   "Human Resources",
-  //   "Finance",
-  //   "Customer Support",
-  //   "Operations",
-  // ];
-
-  // const leads = [
-  //   "John Smith",
-  //   "Sarah Johnson",
-  //   "Michael Brown",
-  //   "Emily Davis",
-  //   "David Wilson",
-  // ];
 
   const { data } = useAuth();
   // State management

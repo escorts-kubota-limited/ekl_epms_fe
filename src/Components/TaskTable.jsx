@@ -396,6 +396,14 @@ function TaskTable({
       cell: BaseCell,
     },
     {
+      header: "Duration",
+      accessorKey: "duration",
+      meta: {
+        type: "number",
+        editable: false,
+      },
+    },
+    {
       header: "Delay",
       accessorKey: "gap",
       meta: {

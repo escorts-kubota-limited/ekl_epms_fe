@@ -17,7 +17,7 @@ const MenuItems = () => {
 };
 const Navbar = () => {
   return (
-    <div className=" bg-teal-theme  grid grid-cols-12 h-16">
+    <div className=" bg-gradient-to-br from-teal-300 to-teal-600 grid grid-cols-12 h-16">
       <div className="col-span-1 p-5 w-48">
         {/* <img src="../../Assets/newlogo.png" /> */}
       </div>

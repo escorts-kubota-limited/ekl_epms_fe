@@ -678,6 +678,9 @@ import {
   Settings,
   ChevronRight,
   AlertCircle,
+  ClipboardList,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import SelectTeam from "@/Components/SelectTeam";
 import axios from "axios";
@@ -689,6 +692,39 @@ import {
   ADD_DRAFT,
 } from "@/URL";
 import { useAuth } from "@/AuthProvider";
+
+const initialVolumeData = [{ model: "Model A", y1: "", y2: "", y3: "" }];
+
+const initialUplData = [
+  {
+    aggregate: "Engine",
+    upl: "",
+    currentSpec: "",
+    changeSpec: "",
+    changeDetails: "",
+  },
+  {
+    aggregate: "Transmission",
+    upl: "",
+    currentSpec: "",
+    changeSpec: "",
+    changeDetails: "",
+  },
+  {
+    aggregate: "Hydraulic",
+    upl: "",
+    currentSpec: "",
+    changeSpec: "",
+    changeDetails: "",
+  },
+  {
+    aggregate: "Vehicle",
+    upl: "",
+    currentSpec: "",
+    changeSpec: "",
+    changeDetails: "",
+  },
+];
 
 const ProjectDetailsForm_KMC = ({
   projectDetails = {},
@@ -731,6 +767,9 @@ const ProjectDetailsForm_KMC = ({
       pmo: projectDetails?.pmo || "",
       project_description: projectDetails?.project_description || "",
       project_code: projectDetails?.project_code || "",
+      upl_number: projectDetails?.upl_number || "",
+      volume_data: projectDetails?.volume_data || initialVolumeData,
+      upl_data: projectDetails?.upl_data || initialUplData,
     },
   });
 
@@ -750,10 +789,21 @@ const ProjectDetailsForm_KMC = ({
   const projectType = watch("project_type");
   // const projectCode = watch("project_code");
   const [showPopup, setShowPopup] = useState(false);
-  const [projectCodeMode, setProjectCodeMode] = useState(null); // 'manual' or 'auto'
+  const [projectCodeMode, setProjectCodeMode] = useState(() =>
+    projectDetails?.project_code === "" ||
+    projectDetails?.project_code === undefined
+      ? "auto"
+      : "manual"
+  );
+  // 'manual' or 'auto'
   const [shouldFocus, setShouldFocus] = useState(false);
 
+  const [volumeData, setVolumeData] = useState(getValues("volume_data"));
+  const [uplData, setUplData] = useState(getValues("upl_data"));
+
   const { data } = useAuth();
+
+  const projectCodeRef = useRef(null);
 
   // const inputRef = useRef(null);
 
@@ -761,12 +811,18 @@ const ProjectDetailsForm_KMC = ({
 
   useEffect(() => {
     if (projectCodeMode === "manual") {
-      // console.log(projectCodeMode)
-      // inputRef.current.focus();
       setFocus("project_code");
-      // setShouldFocus(false);
     }
   }, [projectCodeMode]);
+
+  // useEffect(()=>{
+  //   if(shouldFocus && projectCodeMode==="manual"){
+  //     setFocus("project_code");
+  //     setShouldFocus(false)
+  //   }
+  //   console.log(shouldFocus)
+
+  // },[shouldFocus])
 
   useEffect(() => {
     getUserAndResponsibilityList();
@@ -777,6 +833,49 @@ const ProjectDetailsForm_KMC = ({
       getPmoName();
     }
   }, [projectPlatform, projectDetails]);
+
+  useEffect(() => {
+    setValue("volume_data", volumeData);
+  }, [volumeData, setValue]);
+
+  useEffect(() => {
+    setValue("upl_data", uplData);
+  }, [uplData, setValue]);
+
+  console.log(volumeData, uplData);
+
+  const handleUplChange = (index, field, value) => {
+    const newData = [...uplData];
+    newData[index][field] = value;
+    setUplData(newData);
+  };
+
+  const handleVolumeChange = (index, field, value) => {
+    const updatedData = [...volumeData];
+    if (field === "model") {
+      updatedData[index][field] = value;
+    } else {
+      updatedData[index][field] = value === "" ? "" : Number(value);
+    }
+    setVolumeData(updatedData);
+  };
+
+  const addNewRow = () => {
+    const newRow = {
+      model: `Model ${String.fromCharCode(65 + volumeData.length)}`,
+      y1: "",
+      y2: "",
+      y3: "",
+    };
+    setVolumeData([...volumeData, newRow]);
+  };
+
+  const deleteRow = (index) => {
+    if (volumeData.length > 1) {
+      const updatedData = volumeData.filter((_, i) => i !== index);
+      setVolumeData(updatedData);
+    }
+  };
 
   const addProjectToDraft = async (data) => {
     console.log("Adding project to draft:", data);
@@ -872,15 +971,21 @@ const ProjectDetailsForm_KMC = ({
   const handleOptionSelect = (selectedMode) => {
     setProjectCodeMode(selectedMode);
     setShowPopup(false);
-
+    if (selectedMode === "manual") {
+      // setValue("project_code", "");
+      setTimeout(() => {
+        projectCodeRef.current?.focus();
+      }, 100);
+    }
     if (selectedMode === "auto") {
       setProjectCodeMode("auto");
       // onChange && onChange("AUTO_GENERATED");
-    } else {
+    } else if (selectedMode === "manual") {
       setProjectCodeMode("manual");
+      // setValue("project_code", "");
       // onChange && onChange(projectCode === "AUTO_GENERATED" ? "" : value);
       // Set flag to focus input after re-render
-      setShouldFocus(true);
+      // setShouldFocus(true);
     }
   };
   // console.log(mode)
@@ -962,23 +1067,39 @@ const ProjectDetailsForm_KMC = ({
     type = "text",
     placeholder,
     className = "",
-  }) => (
-    <input
-      {...register(name)}
-      type={type}
-      placeholder={placeholder}
-      className={`w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 
+  }) => {
+    const { onChange, onBlur, ref, ...registerProps } = register(name);
+
+    return (
+      <input
+        {...registerProps}
+        ref={(el) => {
+          // Combine refs properly
+          ref(el);
+          if (name === "project_code") {
+            projectCodeRef.current = el;
+          }
+        }}
+        type={type}
+        placeholder={placeholder}
+        className={`w-full px-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-600 
                   bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                   focus:border-blue-500 focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-800
                   transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500
                   hover:border-gray-300 dark:hover:border-gray-500 ${className}`}
-      onClick={() => {
-        if (name === "project_code") {
-          handleInputClick();
-        }
-      }}
-    />
-  );
+        onChange={(e) => {
+          onChange(e); // Call react-hook-form's onChange
+          // Add any custom logic here if needed
+        }}
+        onBlur={onBlur}
+        onClick={() => {
+          if (name === "project_code") {
+            handleInputClick();
+          }
+        }}
+      />
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-2">
@@ -1491,6 +1612,245 @@ const ProjectDetailsForm_KMC = ({
                                hover:border-gray-300 dark:hover:border-gray-500 min-h-[160px] resize-none"
                   />
                 </FormField>
+              </div>
+            </div>
+            <div className="mb-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="p-2 bg-teal-100 dark:bg-teal-900 rounded-lg">
+                  <ClipboardList className="w-5 h-5 text-teal-600" />
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+                  UPL & Volume Details
+                </h2>
+              </div>
+
+              <div className="space-y-8">
+                <FormField label="UPL Number">
+                  <TextInput
+                    register={register}
+                    name="upl_number"
+                    placeholder="Enter UPL Number"
+                    {...register("upl_number")}
+                  />
+                </FormField>
+
+                {/* Volume Table */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Annual Volume
+                  </label>
+                  <div className="p-2 max-w-6xl mx-auto">
+                    <div className="flex justify-between items-center mb-2">
+                      <button
+                        onClick={addNewRow}
+                        type="button"
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors duration-200 shadow-sm hover:shadow-md"
+                      >
+                        <Plus size={18} />
+                        Add Row
+                      </button>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-xl border-2 border-gray-200 dark:border-gray-600 shadow-sm">
+                      <div className="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+                        {/* Header */}
+                        <div className="grid grid-cols-6 text-center bg-gray-50 dark:bg-gray-700/50">
+                          <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider col-span-2">
+                            Model
+                          </div>
+                          <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Y-1
+                          </div>
+                          <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Y-2
+                          </div>
+                          <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Y-3
+                          </div>
+                          <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">
+                            Actions
+                          </div>
+                        </div>
+
+                        {/* Table Body */}
+                        <div className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                          {volumeData.map((row, index) => (
+                            <div
+                              key={index}
+                              className="grid grid-cols-6 items-center hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors duration-150"
+                            >
+                              <input
+                                type="text"
+                                value={row.model}
+                                onChange={(e) =>
+                                  handleVolumeChange(
+                                    index,
+                                    "model",
+                                    e.target.value
+                                  )
+                                }
+                                className="col-span-2 w-full h-full py-3 px-4 bg-transparent border-r border-gray-200 dark:border-gray-600 focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20 text-sm font-medium text-gray-800 dark:text-gray-200"
+                                placeholder="Enter model name"
+                              />
+                              <input
+                                type="number"
+                                value={row.y1}
+                                onChange={(e) =>
+                                  handleVolumeChange(
+                                    index,
+                                    "y1",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-full p-3 bg-transparent border-r border-gray-200 dark:border-gray-600 focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20 text-center text-gray-800 dark:text-gray-200"
+                                placeholder="0"
+                              />
+                              <input
+                                type="number"
+                                value={row.y2}
+                                onChange={(e) =>
+                                  handleVolumeChange(
+                                    index,
+                                    "y2",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-full p-3 bg-transparent border-r border-gray-200 dark:border-gray-600 focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20 text-center text-gray-800 dark:text-gray-200"
+                                placeholder="0"
+                              />
+                              <input
+                                type="number"
+                                value={row.y3}
+                                onChange={(e) =>
+                                  handleVolumeChange(
+                                    index,
+                                    "y3",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-full p-3 bg-transparent border-r border-gray-200 dark:border-gray-600 focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20 text-center text-gray-800 dark:text-gray-200"
+                                placeholder="0"
+                              />
+                              <div className="py-3 px-4 flex justify-center">
+                                <button
+                                  onClick={() => deleteRow(index)}
+                                  disabled={volumeData.length <= 1}
+                                  className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+                                  title={
+                                    volumeData.length <= 1
+                                      ? "Cannot delete the last row"
+                                      : "Delete row"
+                                  }
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Summary */}
+                    {/* <div className="mt-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Total rows:{" "}
+                        <span className="font-semibold">
+                          {volumeData.length}
+                        </span>
+                      </p>
+                    </div> */}
+                  </div>
+                </div>
+
+                {/* UPL Table */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    UPL Details
+                  </label>
+                  <div className="overflow-x-auto rounded-xl border-2 border-gray-200 dark:border-gray-600">
+                    <div className="min-w-max divide-y divide-gray-200 dark:divide-gray-600">
+                      <div className="grid grid-cols-12 text-center bg-gray-50 dark:bg-gray-700/50">
+                        <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider col-span-2">
+                          Aggregates
+                        </div>
+                        <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider col-span-1">
+                          UPL
+                        </div>
+                        <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider col-span-3">
+                          Current Specs
+                        </div>
+                        <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider col-span-3">
+                          Change Specs
+                        </div>
+                        <div className="py-3 px-4 text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider col-span-3">
+                          Change Details
+                        </div>
+                      </div>
+                      <div className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-600">
+                        {uplData.map((row, index) => (
+                          <div
+                            key={index}
+                            className="grid grid-cols-12 items-stretch"
+                          >
+                            <div className="py-3 px-4 text-sm font-medium text-gray-800 dark:text-gray-200 col-span-2 flex items-center">
+                              {row.aggregate}
+                            </div>
+                            <div className="col-span-1 border-l border-gray-200 dark:border-gray-600">
+                              <input
+                                type="text"
+                                value={row.upl}
+                                onChange={(e) =>
+                                  handleUplChange(index, "upl", e.target.value)
+                                }
+                                className="w-full h-full p-2 bg-transparent focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20"
+                              />
+                            </div>
+                            <div className="col-span-3 border-l border-gray-200 dark:border-gray-600">
+                              <textarea
+                                value={row.currentSpec}
+                                onChange={(e) =>
+                                  handleUplChange(
+                                    index,
+                                    "currentSpec",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-full p-2 bg-transparent focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20 resize-none min-h-[40px]"
+                              />
+                            </div>
+                            <div className="col-span-3 border-l border-gray-200 dark:border-gray-600">
+                              <textarea
+                                value={row.changeSpec}
+                                onChange={(e) =>
+                                  handleUplChange(
+                                    index,
+                                    "changeSpec",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-full p-2 bg-transparent focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20 resize-none min-h-[40px]"
+                              />
+                            </div>
+                            <div className="col-span-3 border-l border-gray-200 dark:border-gray-600">
+                              <textarea
+                                value={row.changeDetails}
+                                onChange={(e) =>
+                                  handleUplChange(
+                                    index,
+                                    "changeDetails",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-full h-full p-2 bg-transparent focus:ring-0 focus:outline-none focus:bg-blue-50 dark:focus:bg-blue-900/20 resize-none min-h-[40px]"
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 

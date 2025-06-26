@@ -972,6 +972,13 @@ export const EditableTaskListTable = ({
           newData[actualRowIndex][columnKey] = newValue;
           newData[actualRowIndex]["gap"] = calculatedDelay;
 
+          // if (newData[actualRowIndex]["duration"]) {
+          const updatedDuration =
+            calculatedDelay + Number(newData[actualRowIndex]["duration"]);
+          console.log(updatedDuration);
+          newData[actualRowIndex]["duration"] = updatedDuration;
+          // }
+
           setTaskData(newData);
           setEditingCell(null);
           setEditValue("");
@@ -1041,6 +1048,18 @@ export const EditableTaskListTable = ({
 
       // Handle duration changes
       if (columnKey === "duration") {
+        if (editValue === "") {
+          const newData = [...tData];
+          newData[actualRowIndex][columnKey] = editValue;
+          setEditingCell(null);
+          return;
+        }
+        if (actualRowIndex === 0) {
+          const newData = [...tData];
+          newData[actualRowIndex][columnKey] = editValue;
+          setEditingCell(null);
+          return;
+        }
         setShowModal(true);
         const newData = [...tData];
         newData[actualRowIndex][columnKey] = editValue;
@@ -1052,6 +1071,26 @@ export const EditableTaskListTable = ({
         const newData = [...tData];
         newData[2][columnKey] = uplValue;
         setEditingCell(null);
+        return;
+      }
+      if (columnKey === "status" && (editValue ==="Done"||editValue ==="done")) {
+        if (!currentRow.actual_date) {
+          console.warn("Cannot update status: actual_date is missing");
+          setEditingCell(null);
+          setEditValue("");
+          setCurrentRowIndex("");
+          alert("Please set the actual date before updating the status.");
+          return;
+        }
+
+        const newData = [...tData];
+        newData[actualRowIndex][columnKey] = newValue;
+        setTaskData(newData);
+        setEditingCell(null);
+        setEditValue("");
+        setCurrentRowIndex("");
+
+        console.log(`Status updated to: ${newValue}`);
         return;
       }
 
@@ -1074,44 +1113,52 @@ export const EditableTaskListTable = ({
     }
   };
 
-  const setNextRowTargetDate = (response) => {
+  const setCurrentTargetDate = (response) => {
     console.log(currentRowIndex, editValue, response);
 
     if (response) {
       try {
-        const currentRowTargetDate = moment(
-          tData[currentRowIndex]["plan_date"]
-        );
+        const previousIndex = currentRowIndex - 1;
 
-        if (!currentRowTargetDate.isValid()) {
-          console.warn("Invalid plan_date for next row calculation");
+        // Ensure the previous row exists
+        if (previousIndex < 0 || !tData[previousIndex]) {
+          console.warn("No valid previous row to derive plan_date from.");
           return;
         }
 
-        const nextRowTargetDate = currentRowTargetDate
+        const previousRowTargetDate = moment(tData[previousIndex]["plan_date"]);
+
+        if (!previousRowTargetDate.isValid()) {
+          console.warn("Invalid plan_date in previous row for calculation");
+          return;
+        }
+
+        const calculatedTargetDate = previousRowTargetDate
           .clone()
           .add(editValue, "days");
-        const nextTargetDateValue = nextRowTargetDate.format("YYYY-MM-DD");
+        const newTargetDateValue = calculatedTargetDate.format("YYYY-MM-DD");
 
         console.log(
-          currentRowTargetDate.toDate(),
-          nextRowTargetDate.toDate(),
+          "Previous target date:",
+          previousRowTargetDate.toDate(),
+          "New calculated target date:",
+          calculatedTargetDate.toDate(),
+          "Edit value (days):",
           editValue,
-          nextTargetDateValue
+          "Formatted target date:",
+          newTargetDateValue
         );
 
-        const nextIndex = currentRowIndex + 1;
+        const newData = [...tData];
+        newData[currentRowIndex]["plan_date"] = newTargetDateValue;
 
-        if (currentRowIndex < tData.length - 2 && currentRowIndex != 0) {
-          console.log("updated next target date");
-
-          const newData = [...tData];
-          newData[nextIndex]["plan_date"] = nextTargetDateValue;
-          console.log(newData);
-          setTaskData(newData);
-        }
+        console.log("Updated current row with new target date:", newData);
+        setTaskData(newData);
       } catch (error) {
-        console.error("Error setting next row target date:", error);
+        console.error(
+          "Error setting current row target date from previous row:",
+          error
+        );
       }
     }
   };
@@ -1478,46 +1525,6 @@ export const EditableTaskListTable = ({
   const totalPagesDisplay = Math.ceil(displayData.length / pageSize);
   const paginatedDisplayData = displayData.slice(startIndex, endIndex);
 
-  const [uplValue, setUplValue] = useState(tData[2]?.upl_number ?? null);
-  const openUPLModal = () => {
-    setShowUplModal(true);
-    setUplValue(""); // Reset input when opening
-  };
-
-  const closeUPLModal = () => {
-    setShowUplModal(false);
-    setUplValue("");
-  };
-  const handleConfirm = () => {
-    const numberValue = parseFloat(uplValue);
-    if (!isNaN(numberValue)) {
-      setUplValue(numberValue);
-      setEditValue("");
-      setCurrentRowIndex("");
-      closeUPLModal();
-    }
-  };
-
-  useEffect(() => {
-    console.log(uplValue);
-    // let newData = [...tData];
-    // if (uplValue != null) {
-    //   newData[2].upl_number = uplValue;
-    //   console.log("first");
-    // }
-    // setTaskData(newData);
-    // handleSave(2, "upl_number");
-  }, [uplValue]);
-
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      handleConfirm();
-    }
-    if (e.key === "Escape") {
-      closeUPLModal();
-    }
-  };
-
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Main Table */}
@@ -1713,73 +1720,12 @@ export const EditableTaskListTable = ({
         </CardContent>
       </Card>
 
-      {/*UPL modal*/}
-      {showUplModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm mx-4">
-            {/* Modal Header */}
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold text-gray-800">
-                Enter a Number
-              </h2>
-              <button
-                onClick={closeUPLModal}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X size={24} />
-              </button>
-            </div>
-
-            {/* Modal Content */}
-            <div className="mb-6">
-              <label
-                htmlFor="numberInput"
-                className="block text-sm font-medium text-gray-700 mb-2"
-              >
-                No. of Parts
-              </label>
-              <input
-                id="numberInput"
-                type="number"
-                defaultValue={tData[2].upl_number}
-                onChange={(e) => setUplValue(e.target.value)}
-                onKeyDown={handleKeyPress}
-                placeholder="Enter a number..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                autoFocus
-              />
-            </div>
-
-            {/* Modal Actions */}
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={closeUPLModal}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  handleSave(2, "upl_number");
-                  return handleConfirm();
-                }}
-                disabled={!uplValue.trim()}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium rounded-md transition-colors"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Change Input Modal */}
       {showModal && (
         <ChangeInputModal
           showModal={showModal}
           setShowModal={setShowModal}
-          setAffectNextRow={setAffectNextRow}
-          handleUpdate={setNextRowTargetDate}
+          handleUpdate={setCurrentTargetDate}
           rowIndex={currentRowIndex}
           value={editValue}
         />

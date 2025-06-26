@@ -69,6 +69,8 @@ export const POST_INBOX_ACTION = `${BASE_TEST_URL}/inboxaction`;
 
 export const GET_INBOX_HISTORY = `${BASE_TEST_URL}/getinboxhistory`; ///:project_id`
 
+export const GET_PROJECT_PRR = `${BASE_TEST_URL}/projectprrlist`//:project_code
+
 // //Build URLS
 // export const IMAGE_PUBLIC_URL = "http://epmsapi.escortskubota.com/image";
 // export const BASE_URL = "http://epmsapi.escortskubota.com"; ///updateprojectdata

@@ -10,6 +10,7 @@ import {
 } from "@/Components/ui/dialog";
 import SelectTeam from "./SelectTeam";
 import { Textarea } from "@material-tailwind/react";
+import { ClipboardList } from "lucide-react";
 
 function ProjectDetails({
   projectDetails,
@@ -59,6 +60,12 @@ function ProjectDetails({
     console.log(projectDetails);
     console.log(tempData);
     alert("Project details have been saved");
+  };
+
+  const summaryData = {
+    uplNumber: projectDetails?.upl_number,
+    volumeData: projectDetails?.volume_data,
+    uplData: projectDetails?.upl_data,
   };
 
   const FormField = ({
@@ -329,8 +336,8 @@ function ProjectDetails({
                 </div>
               )}
             </FormField>
-            {!forUpdateTask && (
-              // <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 ">
+            {/* {!forUpdateTask && ( */}
+             <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 ">
               <Dialog>
                 <DialogTrigger asChild>
                   <button
@@ -341,7 +348,7 @@ function ProjectDetails({
                 text-white font-medium rounded-lg 
                 transition-all duration-200 
                 shadow-md hover:shadow-lg
-                focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 w-36
+                focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 w-full
               "
                   >
                     {/* <svg
@@ -350,14 +357,14 @@ function ProjectDetails({
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                     > */}
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
-                      />
+                    {/* <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"
+                    /> */}
                     {/* </svg> */}
-                    {forUpdateTask ? "View Team" : "Select Team"}
+                   View Team
                   </button>
                 </DialogTrigger>
                 <DialogContent className="bg-white dark:bg-gray-900 max-h-[90vh] max-w-5xl overflow-y-auto">
@@ -377,9 +384,8 @@ function ProjectDetails({
                   />
                 </DialogContent>
               </Dialog>
-              // </div>
-              
-            )}
+              </div>
+            {/* )} */}
 
             {/* Save Button */}
             {onProjectEdit && (
@@ -403,6 +409,116 @@ function ProjectDetails({
               </div>
             )}
           </form>
+          <div className="max-w-7xl mx-auto p-6 bg-white">
+            {/* Header */}
+            <div className="mb-6">
+              <div className="flex items-center space-x-3 mb-2">
+                <ClipboardList className="w-5 h-5 text-gray-600" />
+                <h1 className="text-xl font-semibold text-gray-900">
+                  UPL & Volume Summary
+                </h1>
+              </div>
+              <p className="text-sm text-gray-600">
+                UPL Number: {summaryData.uplNumber}
+              </p>
+            </div>
+
+            {/* Annual Volume Table */}
+            <div className="mb-8">
+              <h2 className="text-lg font-medium text-gray-900 mb-3">
+                Annual Volume
+              </h2>
+              <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Model
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Y-1
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Y-2
+                      </th>
+                      <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Y-3
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {summaryData?.volumeData?.map((row, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {row.model}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {row.y1.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {row.y2.toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                          {row.y3.toLocaleString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* UPL Details Table */}
+            <div>
+              <h2 className="text-lg font-medium text-gray-900 mb-3">
+                UPL Details
+              </h2>
+              <div className="overflow-x-auto border border-gray-200 rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Aggregates
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        UPL
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Current Specs
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Change Specs
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Change Details
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {summaryData?.uplData?.map((row, index) => (
+                      <tr key={index} className="hover:bg-gray-50">
+                        <td className="px-4 py-4 text-sm font-medium text-gray-900">
+                          {row.aggregate}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-900">
+                          {row.upl}
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700 max-w-xs">
+                          <div className="break-words">{row.currentSpec}</div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700 max-w-xs">
+                          <div className="break-words">{row.changeSpec}</div>
+                        </td>
+                        <td className="px-4 py-4 text-sm text-gray-700 max-w-xs">
+                          <div className="break-words">{row.changeDetails}</div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

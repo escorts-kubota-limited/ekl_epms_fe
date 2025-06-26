@@ -51,7 +51,6 @@
 //   const [updateFlag, setUpdateFlag] = useState(false);
 //   const navigate = useNavigate();
 
-
 //   // const demoRoles = [
 //   //   {hasAccess:}
 //   // ]
@@ -359,18 +358,17 @@
 
 // export default IndividualProjectDetails;
 
-
 import { Button } from "@/Components/ui/button";
 import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
-import { 
-  PencilSquareIcon, 
+import {
+  PencilSquareIcon,
   ArrowLeftIcon,
   ClockIcon,
   CheckCircleIcon,
   ExclamationTriangleIcon,
   EyeIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
 } from "@heroicons/react/24/solid";
 import ProjectDetails from "../../Components/ProjectDetails";
 import TaskListForm from "../../Components/TaskListForm";
@@ -380,6 +378,7 @@ import {
   USER_LIST_URL,
   GET_APPROVAL_HISTORY,
   GET_RESPONSIBILITIES_LIST,
+  GET_PROJECT_PRR,
 } from "@/URL";
 import axios, { Axios } from "axios";
 import TaskTable from "../../Components/TaskTable";
@@ -416,21 +415,22 @@ const IndividualProjectDetails = () => {
   const [updateFlag, setUpdateFlag] = useState(false);
   const [teamList, setTeamList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [projectPrrList, setProjectPrrList] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        const [
-          response,
-          userListData,
-          approvalHistory,
-        ] = await Promise.all([
-          axios.get(`${GET_PROJECT_DATA_URL}/${rowData.project_id}`),
-          axios.get(USER_LIST_URL),
-          axios.get(`${GET_APPROVAL_HISTORY}/${rowData.project_id}`),
-        ]);
+        const projectCode = rowData.project_code;
+        const encoded = encodeURIComponent(projectCode);
+        const [response, userListData, approvalHistory, prrData] =
+          await Promise.all([
+            axios.get(`${GET_PROJECT_DATA_URL}/${rowData.project_id}`),
+            axios.get(USER_LIST_URL),
+            axios.get(`${GET_APPROVAL_HISTORY}/${rowData.project_id}`),
+            axios.get(`${GET_PROJECT_PRR}?project_code=${encoded}`),
+          ]);
         const resData = response.data;
         setTaskDetails(resData.tasks);
         setProjectDetails(resData.project);
@@ -438,6 +438,7 @@ const IndividualProjectDetails = () => {
         setUpdateFlag(false);
         setIsAdmin(data.user_info.isAdmin);
         setHistory(() => [...approvalHistory.data]);
+        setProjectPrrList(() => [...prrData.data]);
         const userListDataResponse = userListData.data;
         setUserList(userListDataResponse);
         setTeamList(resData.teamList);
@@ -496,24 +497,24 @@ const IndividualProjectDetails = () => {
 
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
-      case 'approved':
-        return 'bg-green-500 text-white';
-      case 'pending':
-        return 'bg-yellow-500 text-white';
-      case 'rejected':
-        return 'bg-red-500 text-white';
+      case "approved":
+        return "bg-green-500 text-white";
+      case "pending":
+        return "bg-yellow-500 text-white";
+      case "rejected":
+        return "bg-red-500 text-white";
       default:
-        return 'bg-gray-500 text-white';
+        return "bg-gray-500 text-white";
     }
   };
 
   const getStatusIcon = (status) => {
     switch (status?.toLowerCase()) {
-      case 'approved':
+      case "approved":
         return <CheckCircleIcon className="w-5 h-5" />;
-      case 'pending':
+      case "pending":
         return <ClockIcon className="w-5 h-5" />;
-      case 'rejected':
+      case "rejected":
         return <ExclamationTriangleIcon className="w-5 h-5" />;
       default:
         return <DocumentTextIcon className="w-5 h-5" />;
@@ -585,7 +586,9 @@ const IndividualProjectDetails = () => {
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="text-gray-600 dark:text-gray-400 mt-4">Loading project details...</p>
+          <p className="text-gray-600 dark:text-gray-400 mt-4">
+            Loading project details...
+          </p>
         </div>
       </div>
     );
@@ -611,9 +614,15 @@ const IndividualProjectDetails = () => {
               </h1>
             </div>
             <div className="flex items-center space-x-2">
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(projectDetails?.project_status)}`}>
+              <span
+                className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                  projectDetails?.project_status
+                )}`}
+              >
                 {getStatusIcon(projectDetails?.project_status)}
-                <span className="ml-2">{projectDetails?.project_status || "Unknown"}</span>
+                <span className="ml-2">
+                  {projectDetails?.project_status || "Unknown"}
+                </span>
               </span>
             </div>
           </div>
@@ -623,9 +632,7 @@ const IndividualProjectDetails = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-4 py-4">
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-2">
           {/* Main Content */}
-          <div className="xl:col-span-3">
-            {renderProjectComponent()}
-          </div>
+          <div className="xl:col-span-3">{renderProjectComponent()}</div>
 
           {/* Sidebar */}
           <div className="xl:col-span-1 -mt-4">
@@ -648,7 +655,9 @@ const IndividualProjectDetails = () => {
                 <Dialog>
                   <DialogTrigger asChild>
                     <Button
-                      className={`w-full justify-center font-medium rounded-lg px-4 py-3 transition-all duration-200 shadow-md hover:shadow-lg ${getStatusColor(projectDetails?.project_status)}`}
+                      className={`w-full justify-center font-medium rounded-lg px-4 py-3 transition-all duration-200 shadow-md hover:shadow-lg ${getStatusColor(
+                        projectDetails?.project_status
+                      )}`}
                     >
                       <EyeIcon className="w-5 h-5 mr-2" />
                       View Status
@@ -665,14 +674,19 @@ const IndividualProjectDetails = () => {
                   </DialogContent>
                 </Dialog>
               ) : (
-                <div className={`w-full text-center font-medium rounded-lg px-4 py-3 ${getStatusColor(projectDetails?.project_status)}`}>
+                <div
+                  className={`w-full text-center font-medium rounded-lg px-4 py-3 ${getStatusColor(
+                    projectDetails?.project_status
+                  )}`}
+                >
                   <div className="flex items-center justify-center">
                     {getStatusIcon(projectDetails?.project_status)}
-                    <span className="ml-2">{projectDetails?.project_status}</span>
+                    <span className="ml-2">
+                      {projectDetails?.project_status}
+                    </span>
                   </div>
                 </div>
               )}
-
 
               {/* Update Details Button */}
               {updateFlag && (
@@ -682,6 +696,15 @@ const IndividualProjectDetails = () => {
                 >
                   <CheckCircleIcon className="w-5 h-5 mr-2" />
                   Update Details
+                </Button>
+              )}
+              {data.user_info.division === "Escorts Agri Machinery" && (
+                <Button
+                  
+                  className="w-full justify-center bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-medium rounded-lg px-4 py-3 transition-all duration-200 shadow-md hover:shadow-lg"
+                >
+                  <CheckCircleIcon className="w-5 h-5 mr-2" />
+                  PRR Details
                 </Button>
               )}
 
@@ -747,16 +770,16 @@ const IndividualProjectDetails = () => {
               </p>
             </div> */}
             {/* <div className="p-6"> */}
-              <TaskTable
-                forProjectDetails={true}
-                data={taskDetails}
-                template={projectDetails?.project_template}
-                setUpdateFlag={setUpdateFlag}
-                setTaskDetails={setTaskDetails}
-                forKMC={data.user_info.division === "Escorts Agri Machinery"}
-                taskDetails={taskDetails}
-                editFlag ={onProjectEdit}
-              />
+            <TaskTable
+              forProjectDetails={true}
+              data={taskDetails}
+              template={projectDetails?.project_template}
+              setUpdateFlag={setUpdateFlag}
+              setTaskDetails={setTaskDetails}
+              forKMC={data.user_info.division === "Escorts Agri Machinery"}
+              taskDetails={taskDetails}
+              editFlag={onProjectEdit}
+            />
             {/* </div> */}
           </div>
         </div>

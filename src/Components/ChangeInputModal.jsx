@@ -1,10 +1,9 @@
 import React, { useState } from "react";
-import { X, ArrowDown, ArrowRight } from "lucide-react";
+import { X, ArrowDown, ArrowRight, ArrowLeft } from "lucide-react";
 
 const ChangeInputModal = ({
   showModal,
   setShowModal,
-  setAffectNextRow,
   handleUpdate,
   rowIndex,
   value
@@ -162,19 +161,18 @@ const ChangeInputModal = ({
               <div className="space-y-3">
                 <button
                   onClick={() => {
-                    setAffectNextRow(false);
-                    handleUpdate(false)
+                    handleUpdate(true)
                     setShowModal(false);
                   }}
                   className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 group"
                 >
                   <div className="flex items-center space-x-3">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
-                      <ArrowRight className="w-5 h-5 text-blue-600" />
+                      <ArrowLeft className="w-5 h-5 text-blue-600" />
                     </div>
                     <div className="text-left">
                       <div className="font-semibold text-gray-800">
-                        Add to current task's duration only
+                        Consider previous target date as start date
                       </div>
                       {/* <div className="text-sm text-gray-500">
                         Update only the current row
@@ -185,8 +183,7 @@ const ChangeInputModal = ({
 
                 <button
                   onClick={() => {
-                    setAffectNextRow(true);
-                    handleUpdate(true)
+                    handleUpdate(false)
                     setShowModal(false);
                   }}
                   className="w-full flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl hover:border-green-500 hover:bg-green-50 transition-all duration-200 group"
@@ -197,7 +194,7 @@ const ChangeInputModal = ({
                     </div>
                     <div className="text-left">
                       <div className="font-semibold text-gray-800">
-                        Update next target date as per duration
+                       Set independent target date
                       </div>
                       {/* <div className="text-sm text-gray-500">
                         Apply change to subsequent rows
