@@ -14,10 +14,10 @@ export default function Login() {
   const { logIn } = useAuth();
   const handleLogin = async (e) => {
     e.preventDefault();
-
+    // return ;
     try {
       const response = await logIn(input);
-      console.log(response);
+      console.log("response",response);
       if (response.status === 200) {
         navigate("/dashboard");
       }

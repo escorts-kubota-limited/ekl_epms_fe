@@ -12,17 +12,44 @@ import { ROLES_PERMISSIONS } from "./roles";
 const AuthContext = createContext(null);
 
 const AuthProvider = ({ children }) => {
-  const [userData, setUserData] = useState({});
   const [data, setData] = useState({ user_info: {} });
   const [token, setToken] = useState(); //access token
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    if (storedToken) {
-      setToken(storedToken);
-      fetchUser(storedToken);
+    console.log("headerrrr")
+   const storedToken = localStorage.getItem('token');
+   console.log("useEffect",storedToken);
+    const storedDataRaw = localStorage.getItem('data');
+    if (storedToken && storedDataRaw) {
+      let parsed = null;
+      try {
+        parsed = JSON.parse(storedDataRaw);
+      } catch (e) {
+        console.error('Failed to parse stored data:', e);
+      }
+      if (parsed && parsed.user_info) {
+        setToken(storedToken);
+        setData(parsed);
+        // restore axios headers
+        axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
+        axios.defaults.headers.common['user_id'] = `${parsed.user_info.userIndex}`;
+        axios.defaults.headers.common['keyword'] = `${parsed.user_info.keyword}`;
+        axios.defaults.headers.common['ein'] = `${parsed.user_info.ein}`;
+
+        // Optional: validate token with API
+        // axios.get('/api/me').catch(() => logOut());
+      } else {
+        // invalid stored data
+        localStorage.removeItem('token');
+        localStorage.removeItem('data');
+        setToken(null);
+        setData(null);
+      }
+    } else {
+      setToken(null);
+      setData(null);
     }
+
     //
     // const checkLoggedIn = async () => {
     //   try {
@@ -55,15 +82,18 @@ const AuthProvider = ({ children }) => {
     }
   };
 
-  const hasPermission = (permission) => {
-    if (!user || !user.role) return false;
+  // const hasPermission = (permission) => {
+  //   if (!user || !user.role) return false;
 
-    const permissions = ROLES_PERMISSIONS[user.role] || [];
-    return permissions.includes(permission);
-  };
-  const hasRole = (role) => {
-    return user?.role === role;
-  };
+  //   const permissions = ROLES_PERMISSIONS[user.role] || [];
+  //   return permissions.includes(permission);
+  // };
+  // const hasRole = (role) => {
+  //   return user?.role === role;
+  // };
+
+  console.log("data",data);
+  console.log("token",token);
 
   const logIn = async (credentials) => {
     try {
@@ -81,14 +111,13 @@ const AuthProvider = ({ children }) => {
       setData({ ...userInfo });
       // data.user_info = user_data;
       // console.log(data.user_info)
-      localStorage.setItem("token", token);
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       axios.defaults.headers.common["user_id"] = `${user_data.userIndex}`;
       axios.defaults.headers.common["keyword"] = `${user_data.keyword}`;
       axios.defaults.headers.common["ein"] = `${user_data.ein}`;
       localStorage.setItem("token", token);
-      localStorage.setItem("data", data);
-      localStorage.setItem("permission", hasPermission);
+      localStorage.setItem("data", JSON.stringify({ ...userInfo }));
+      // localStorage.setItem("permission", hasPermission);
 
       //console.log(response);
       return response;
@@ -106,18 +135,20 @@ const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error(err);
     }
-    setUserData(null);
     setData(null);
     setToken(null);
     localStorage.removeItem("token");
     localStorage.removeItem("data");
-    localStorage.removeItem("permission");
+    // localStorage.removeItem("permission");
     delete axios.defaults.headers.common["Authorization"];
+    delete axios.defaults.headers.common['user_id'];
+    delete axios.defaults.headers.common['keyword'];
+    delete axios.defaults.headers.common['ein'];
   };
 
   return (
     <AuthContext.Provider
-      value={{ data, token, logIn, logOut, hasPermission, hasRole, setData,setToken }}
+      value={{ data, token, logIn, logOut }}
     >
       {children}
     </AuthContext.Provider>
@@ -127,6 +158,5 @@ const AuthProvider = ({ children }) => {
 export default AuthProvider;
 
 export const useAuth = () => {
-  console.log(AuthContext);
   return useContext(AuthContext);
 };

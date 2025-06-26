@@ -42,6 +42,8 @@ function Breadcrumbs() {
     .map((crumb) => {
       currentLink += `/${crumb}`;
 
+      console.log( "Breadcrumb",breadCrumbLabels , " ", crumb);
+
       return (
         <>
           <BreadcrumbSeparator>
