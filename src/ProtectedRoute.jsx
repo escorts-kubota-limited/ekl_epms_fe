@@ -11,8 +11,7 @@ const ProtectedRoute = ({ children }) => {
   //   }
     
   // }
-
-  return token ? <>{children}</> : <Navigate to="/login" />;
+  return token  ? <>{children}</> : localStorage.getItem("token") ?    <>{children}</> : <Navigate to="/login" />;
   // return token ? <>{children}</> : <Navigate to="/timelog" />;
 };
 
