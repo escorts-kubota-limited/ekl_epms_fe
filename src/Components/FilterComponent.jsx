@@ -547,6 +547,7 @@ const FilterComponent = ({
     filterPriority,
     filterPmo,
     filterSectionName,
+    forKmc
   ]);
 
   const handlefilterProjectTypeChange = (e) => {
