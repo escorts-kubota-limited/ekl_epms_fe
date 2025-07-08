@@ -24,6 +24,7 @@ import ProjectDetailsForm_KMC from "@/Modules/KMC/ProjectDetailsForm_KMC";
 import ExpandableSubtaskTable from "./ExpandableSubtaskTable";
 import GeneralTaskAddition from "./GeneralTaskAddition";
 import TaskSummary from "./TaskSummary";
+import ImportProjects from "@/pages/ImportPlan/ImportProjects";
 
 // const demoUserList = [
 //   {
@@ -272,6 +273,7 @@ const CreateProject = ({
             </TabsList>
 
             {/* Conditional Button */}
+            <ImportProjects/>
             {activeTab === "review_details" && (
               <div className="flex justify-end w-full lg:w-auto">
                 {data.user_info.division === "Corporate" ? (

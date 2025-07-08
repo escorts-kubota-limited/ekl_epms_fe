@@ -147,7 +147,7 @@ const ImportProjects = () => {
   }, [dataApi, error]);
 
   return (
-    <div className="p-6">
+    <div className="p-2">
       <ImportButton onClick={() => setModalOpen(true)} />
 
       <ModalComponent isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
