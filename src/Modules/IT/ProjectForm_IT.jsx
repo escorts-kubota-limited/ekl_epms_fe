@@ -94,7 +94,7 @@ function ProjectForm_IT({
   const [pmoId, setPmoId] = useState(projectDetails["pmo_id"]);
   const [startDate, setStartDate] = useState();
   const [endDate, setEndDate] = useState();
-  cosnt [draftId,setDraftId] = useState(null);
+  const [draftId,setDraftId] = useState(null);
 
   // State to track which type is currently selected (department, division, or org)
   const [selectedType, setSelectedType] = useState("");
