@@ -8,7 +8,7 @@ const ImportsCSV = ({
   sampleRows,
   handleAPICall,
   setCsvRespObj,
-  apiLoading
+  apiLoading,
 }) => {
   console.log(columnDefs);
   const { data, errors, progress, loading, parseFile, parseError } =
@@ -115,10 +115,37 @@ const ImportsCSV = ({
         <div className="space-y-4">
           <div>
             <h3 className="text-green-700 font-semibold mb-1">
-              Data Preview (first 5 rows):
+              Data Preview 
             </h3>
-            <div className="bg-gray-50 p-4 rounded-md border border-gray-300 max-h-64 overflow-auto text-xs font-mono">
-              <pre>{JSON.stringify(data.slice(0, 5), null, 2)}</pre>
+            <div className="bg-gray-50 p-4 rounded-md border border-gray-300 max-h-64 overflow-auto text-xs">
+              <table className="min-w-max border border-gray-300">
+                <thead className="sticky top-0 bg-gray-200 z-10">
+                  <tr>
+                    {columnDefs.map((col) => (
+                      <th
+                        key={col.name}
+                        className="border px-2 py-1 text-left font-semibold text-gray-800"
+                      >
+                        {col.label}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {data.slice(0, 20).map((row, rowIndex) => (
+                    <tr key={rowIndex} className="even:bg-gray-100">
+                      {columnDefs.map((col) => (
+                        <td
+                          key={col.name}
+                          className="border px-2 py-1 text-gray-700 whitespace-nowrap"
+                        >
+                          {row[col.name] || ""}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
