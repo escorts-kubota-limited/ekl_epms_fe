@@ -388,8 +388,8 @@ const Sidebar = memo(() => {
           show: true,
         },
         {
-          url: "projects/importproject",
-          label: "Import Project",
+          url: "projects/projectExport",
+          label: "Project Export",
           icon: <DocumentArrowUpIcon className="h-4 w-4" />,
           key: "importProject",
           show: true,

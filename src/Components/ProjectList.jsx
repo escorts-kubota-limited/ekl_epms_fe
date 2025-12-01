@@ -8,7 +8,7 @@ const ProjectList = () => {
   useEffect(() => {
     const fetchProjectListData = async () => {
       try {
-        const response = await axios.get(PROJECT_LIST_URL);
+        const response = await axios.get(PROJECT_LIST_URL );
         const projectList = response.data;
         setProjectListData(projectList);
       } catch (err) {

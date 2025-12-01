@@ -34,6 +34,8 @@ import Connect from "./Modules/IT/Connect";
 import ImportProjects from "./pages/ImportPlan/ImportProjects";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ProjectExport from "./pages/ImportPlan/ProjectExport";
+import ProjectExportPage from "./pages/ImportPlan/ProjectExportPage";
 
 export const router = createBrowserRouter(
   createRoutesFromElements(
@@ -95,10 +97,10 @@ export const router = createBrowserRouter(
             />
 
             <Route
-              path="importproject"
+              path="projectExport"
               element={
                 <ProtectedRoute>
-                  <ImportProjects />
+                  <ProjectExportPage />
                 </ProtectedRoute>
               }
             />

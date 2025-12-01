@@ -1525,6 +1525,8 @@ export const EditableTaskListTable = ({
   const totalPagesDisplay = Math.ceil(displayData.length / pageSize);
   const paginatedDisplayData = displayData.slice(startIndex, endIndex);
 
+  const openUPLModal  = ()=>{}
+
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       {/* Main Table */}
