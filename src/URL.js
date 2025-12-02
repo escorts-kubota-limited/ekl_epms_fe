@@ -1,9 +1,13 @@
 // //testing
 const PORT = "3000";
-const BASE_TEST_URL = `http://localhost:${PORT}`; ///updateprojectdata
+const BASE_TEST_URL = (`${import.meta.env.VITE_BASE_URL}`).trim(); ///updateprojectdata
+
+console.log( "base_test_url",BASE_TEST_URL)
 
 export const IMAGE_PUBLIC_URL = `${BASE_TEST_URL}/image`;
+
 export const AUTH_URL = `${BASE_TEST_URL}/user/authenticate`;
+console.log("auth url",AUTH_URL);
 export const ADD_PROJECT_URL = `${BASE_TEST_URL}/addproject`;
 // export const ADD_PROJECT_URL = `http://192.168.22.108/addproject`;
 
